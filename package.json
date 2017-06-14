@@ -1,0 +1,16 @@
+{
+  "name": "loki",
+  "version": "1.0.0",
+  "description": "A bot to book meeting rooms",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "author": "EE",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.16.2",
+    "bluebird": "^3.5.0",
+    "botkit": "^0.5.4"
+  }
+}
