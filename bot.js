@@ -162,13 +162,27 @@ controller.hears('My Events' || 'my events','direct_message',function(bot, messa
       user = info.user.name;
       bookingService.getMyEvents(user)
         .then((events) => {
+          var fields = [];
+          for(var i = 0;i<events.data.length;i++){
+            fields.push({
+              "title":`${events.data[i].title} AT ${events.data[i].roomName}`,
+              "value":`${events.data[i].startsAt} to ${events.data[i].endsAt}`,
+              "short": true
+            })
+          }
+          
           bot.reply(message,{
-            text : events.data[0].title
-
-          });
+            text:"Your Events",
+            attachments:[{
+              "text":"Events",
+              "fields":fields
+            }]
+          })
         })
         .catch(() => {
-
+          bot.reply(message,{
+            text:"Failed to get my events"
+          })
         })
     }
   })
