@@ -1,10 +1,13 @@
 var Botkit = require('botkit');
+var moment = require('moment');
+
 
 const clientId = process.env.SLACK_CLIENT_ID;
 const clientSecret = process.env.SLACK_CLIENT_SECRET;
 
 const greetingMessages = require('./src/help/greeting-messages');
 var BookingService = require('./src/service/booking-service');
+var DateTimeUtil = require('./src/utils/date-time-util');
 
 var bookingService = new BookingService();
 
@@ -28,61 +31,146 @@ controller.configureSlackApp({
 controller.hears('', 'direct_mention,mention', function (bot, message) {
   const user = message.user;
 
-  bot.startPrivateConversation({user: user}, function(response, convo){
-        convo.say({
-        text: `Hello <@${user}> :wave:`,
-        attachments: [
-          {
-            title: 'I cannot talk on public channels. But I\'m all ears out here :simple_smile:',
-            text: 'Type `help` to learn more about me.',
-            mrkdwn_in: ['text']
-          }
-        ]
-      });   
-})
-});
-
-controller.hears(greetingMessages, ['direct_message'], function(bot, message) {
-     bot.reply(message, {
-      text: `Hey <@${message.user}>.`,
-      attachments: [
-        {
-          text: "[Hint:] type `help` to know more about what I can do...",
-          color: '#9999ff',
-          mrkdwn_in: ['text']
-        }
-      ]
+  bot.startPrivateConversation({
+    user: user
+  }, function (response, convo) {
+    convo.say({
+      text: `Hello <@${user}> :wave:`,
+      attachments: [{
+        title: 'I cannot talk on public channels. But I\'m all ears out here :simple_smile:',
+        text: 'Type `help` to learn more about me.',
+        mrkdwn_in: ['text']
+      }]
     });
-    
+  })
 });
 
-controller.hears('help','direct_message',function(bot,message){
-         bot.reply(message, {
-      text: "You can try one of the following..",
-      attachments: [
-        {
-          text: "Type `Book Beach today 3 PM to 4 PM` to book `Beach` for `3 PM to 4 PM`",
+controller.hears(greetingMessages, ['direct_message'], function (bot, message) {
+  bot.reply(message, {
+    text: `Hey <@${message.user}>.`,
+    attachments: [{
+      text: "[Hint:] type `help` to know more about what I can do...",
+      color: '#9999ff',
+      mrkdwn_in: ['text']
+    }]
+  });
+
+});
+
+controller.hears('help', 'direct_message', function (bot, message) {
+  bot.reply(message, {
+    text: "You can try one of the following..",
+    attachments: [{
+        text: "Type `get rooms` to check existing rooms",
+        color: '#36a64f',
+        mrkdwn_in: ['text']
+    },
+    {
+        text: "Type `Book Beach today 3 PM to 4 PM` to book `Beach` for `3 PM to 4 PM`",
+        color: '#36a64f',
+        mrkdwn_in: ['text']
+      },
+      {
+        text: "Type `My Events` to see your events",
+        color: '#9999ff',
+        mrkdwn_in: ['text']
+      }
+    ]
+  });
+});
+
+
+controller.hears('get rooms'||'Get Rooms','direct_message',function(bot,message){
+  bookingService.getRooms()
+    .then((rooms) =>{
+      bot.reply(message,{
+        text:`Rooms for this Office are :`,
+        attachments:[{
+          text: rooms.data[0].roomName,
           color: '#36a64f',
           mrkdwn_in: ['text']
         },
         {
-          text: "Type `My Events` to see your events",
-          color: '#9999ff',
+          text: rooms.data[1].roomName,
+          color: '#36a64f',
+          mrkdwn_in: ['text']
+        },
+        {
+          text: rooms.data[2].roomName,
+          color: '#36a64f',
+          mrkdwn_in: ['text']
+        },
+        {
+          text: rooms.data[3].roomName,
+          color: '#36a64f',
           mrkdwn_in: ['text']
         }
-      ]
+
+        ]
+      })
+    })
+    .catch((error) =>{
+      bot.reply(message,{
+        text : "Failed to Fetch Rooms"
+      })
+    })
+});
+
+
+controller.hears('Book' || 'book','direct_message', function(bot, message){
+  var inputText = message.text;
+  var user;
+  var startsAt;
+  var endsAt;
+  var pattern = /(book)[\s]+(\w)+\s([a-z]+)?(\s)?(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])(\s)(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)(\s*)(to)(\s*)(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])(\s)(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)/ig;
+  if(pattern.test(inputText)){
+    var dateTimeUtil = new DateTimeUtil(inputText);
+     startsAt = dateTimeUtil.startsAt;
+     endsAt = dateTimeUtil.endsAt;
+
+     bot.api.users.info({
+       user:message.user
+     }, function(err, info){
+       if(info){
+         user = info.user.name;
+         bookingService.createEvent("Big Room","","",new Date(startsAt),new Date(endsAt),user)
+          .then((data) => {
+            bot.reply(message, {
+            text: "Room Booked Successfully"
+          });
+        })
+        .catch(error => {
+          bot.reply(message,{
+            text:"Slot Already Booked"
+          });
+        })
+       }
+     })
+  }else{
+    bot.reply(message,{
+      text:"`Oops!!` I Didn't get you. You can always type `Help` if you are lost"
     });
+  }
 });
 
+controller.hears('My Events' || 'my events','direct_message',function(bot, message){
+  var user;
+  bot.api.users.info({
+    user: message.user
+  }, function (err, info) {
+    if (info) {
+      user = info.user.name;
+      bookingService.getMyEvents(user)
+        .then((events) => {
+          bot.reply(message,{
+            text : events.data[0].title
 
-controller.hears('Book','direct_message', function(bot, message){
-  var user = `<@${message.user}>`;
-  console.log(user);
-    bookingService.createEvent("Beach","Standup","Informa","2017-07-10T04:30:00Z","2017-07-10T04:45:00Z",user)
-     .then((data) => {
-         bot.reply(message,{
-             text:"Room Booked Successfully"
-         });
-     });
-  
+          });
+        })
+        .catch(() => {
+
+        })
+    }
+  })
 });
+
