@@ -74,6 +74,11 @@ controller.hears('help', 'direct_message', function (bot, message) {
         text: "Type `My Events` to see your events",
         color: '#9999ff',
         mrkdwn_in: ['text']
+      },
+      {
+        text: "Type `get events for [RoonName]` to get Room Events",
+        color: '#36a64f',
+        mrkdwn_in: ['text']
       }
     ]
   });
@@ -186,5 +191,35 @@ controller.hears('My Events' || 'my events','direct_message',function(bot, messa
         })
     }
   })
+});
+
+controller.hears('get events for'||'Get Events For','direct_message',function(bot,message){
+  var inputText = message.text;
+  var roomNameElements = inputText.split(/\s+/).slice(3);
+  var roomName = roomNameElements[1]?(roomNameElements[0].concat(" "+roomNameElements[1])):roomNameElements[0];
+  bookingService.getRoomEvents(roomName)
+    .then((events) => {
+          var fields = [];
+          for(var i = 0;i<events.data.length;i++){
+            fields.push({
+              "title":`${events.data[i].title}`,
+              "value":`${events.data[i].startsAt} to ${events.data[i].endsAt}`,
+              "short": true
+            })
+          }
+          
+          bot.reply(message,{
+            text:`Events for ${roomName}`,
+            attachments:[{
+              "text":"Events",
+              "fields":fields
+            }]
+          })
+        })
+        .catch(() => {
+          bot.reply(message,{
+            text:"Failed to get room events"
+          })
+        })
 });
 

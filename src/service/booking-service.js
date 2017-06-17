@@ -47,10 +47,23 @@ function BookingService() {
       });
   }
 
+  function getRoomEvents(roomName){
+    return new Promise((resolve,reject) =>{
+      axios.get(`${url}/room/${roomName}/events`)
+        .then((events) =>{
+          resolve(events)
+        })
+        .catch((error) =>{
+          reject(error)
+        })
+    });
+
+  }
   return {
     createEvent: createEvent,
     getMyEvents: getMyEvents,
-    getRooms: getRooms
+    getRooms: getRooms,
+    getRoomEvents: getRoomEvents
   }
 
 }
