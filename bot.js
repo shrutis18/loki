@@ -155,12 +155,12 @@ controller.hears('Book' || 'book', 'direct_message', function (bot, message) {
                 bookingService.createEvent(roomName, "", "", new Date(startsAt), new Date(endsAt), user)
                   .then((data) => {
                     bot.reply(message, {
-                      text: "Room Booked Successfully"
+                      text: data.data
                     });
                   })
                   .catch(error => {
                     bot.reply(message, {
-                      text: "Slot Already Booked"
+                      text: error.data
                     });
                   })
                 break;
