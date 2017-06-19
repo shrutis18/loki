@@ -8,6 +8,7 @@ const clientSecret = process.env.SLACK_CLIENT_SECRET;
 const greetingMessages = require('./src/help/greeting-messages');
 var BookingService = require('./src/service/booking-service');
 var DateTimeUtil = require('./src/utils/date-time-util');
+var NameUtil = require('./src/utils/name-util');
 
 var bookingService = new BookingService();
 
@@ -64,8 +65,8 @@ controller.hears('help', 'direct_message', function (bot, message) {
         text: "Type `get rooms` to check existing rooms",
         color: '#36a64f',
         mrkdwn_in: ['text']
-    },
-    {
+      },
+      {
         text: "Type `Book Beach today 3 PM to 4 PM` to book `Beach` for `3 PM to 4 PM`",
         color: '#36a64f',
         mrkdwn_in: ['text']
@@ -90,80 +91,97 @@ controller.hears('help', 'direct_message', function (bot, message) {
 });
 
 
-controller.hears('get rooms'||'Get Rooms','direct_message',function(bot,message){
+controller.hears('get rooms' || 'Get Rooms', 'direct_message', function (bot, message) {
   bookingService.getRooms()
-    .then((rooms) =>{
-      bot.reply(message,{
-        text:`Rooms for this Office are :`,
-        attachments:[{
-          text: rooms.data[0].roomName,
-          color: '#36a64f',
-          mrkdwn_in: ['text']
-        },
-        {
-          text: rooms.data[1].roomName,
-          color: '#36a64f',
-          mrkdwn_in: ['text']
-        },
-        {
-          text: rooms.data[2].roomName,
-          color: '#36a64f',
-          mrkdwn_in: ['text']
-        },
-        {
-          text: rooms.data[3].roomName,
-          color: '#36a64f',
-          mrkdwn_in: ['text']
-        }
+    .then((rooms) => {
+      bot.reply(message, {
+        text: `Rooms for this Office are :`,
+        attachments: [{
+            text: rooms.data[0].roomName,
+            color: '#36a64f',
+            mrkdwn_in: ['text']
+          },
+          {
+            text: rooms.data[1].roomName,
+            color: '#36a64f',
+            mrkdwn_in: ['text']
+          },
+          {
+            text: rooms.data[2].roomName,
+            color: '#36a64f',
+            mrkdwn_in: ['text']
+          },
+          {
+            text: rooms.data[3].roomName,
+            color: '#36a64f',
+            mrkdwn_in: ['text']
+          }
 
         ]
       })
     })
-    .catch((error) =>{
-      bot.reply(message,{
-        text : "Failed to Fetch Rooms"
+    .catch((error) => {
+      bot.reply(message, {
+        text: "Failed to Fetch Rooms"
       })
     })
 });
 
 
-controller.hears('Book' || 'book','direct_message', function(bot, message){
+controller.hears('Book' || 'book', 'direct_message', function (bot, message) {
   var inputText = message.text;
   var user;
   var startsAt;
   var endsAt;
+  var roomName;
+  var roomNameMatch = false;
   var pattern = /(book)[\s]+(\w)+\s([a-z]+)?(\s)?(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])(\s)(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)(\s*)(to)(\s*)(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])(\s)(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)/ig;
-  if(pattern.test(inputText)){
+  if (pattern.test(inputText)) {
     var dateTimeUtil = new DateTimeUtil(inputText);
-     startsAt = dateTimeUtil.startsAt;
-     endsAt = dateTimeUtil.endsAt;
-
-     bot.api.users.info({
-       user:message.user
-     }, function(err, info){
-       if(info){
-         user = info.user.name;
-         bookingService.createEvent("Big Room","","",new Date(startsAt),new Date(endsAt),user)
-          .then((data) => {
-            bot.reply(message, {
-            text: "Room Booked Successfully"
-          });
-        })
-        .catch(error => {
-          bot.reply(message,{
-            text:"Slot Already Booked"
-          });
-        })
-       }
-     })
-  }else{
-    bot.reply(message,{
-      text:"`Oops!!` I Didn't get you. You can always type `Help` if you are lost"
+    var nameUtil = new NameUtil(inputText);
+    startsAt = dateTimeUtil.startsAt;
+    endsAt = dateTimeUtil.endsAt;
+    var roomName = nameUtil.roomName[1];
+    bot.api.users.info({
+      user: message.user
+    }, function (err, info) {
+      if (info) {
+        user = info.user.name;
+        bookingService.getRooms()
+          .then((rooms) => {
+            for (var i = 0; i < rooms.data.length; i++) {
+              if (rooms.data[i].roomName.match(roomName)) {
+                roomNameMatch = true;
+                bookingService.createEvent(roomName, "", "", new Date(startsAt), new Date(endsAt), user)
+                  .then((data) => {
+                    bot.reply(message, {
+                      text: "Room Booked Successfully"
+                    });
+                  })
+                  .catch(error => {
+                    bot.reply(message, {
+                      text: "Slot Already Booked"
+                    });
+                  })
+                break;
+              }
+            }
+            if (roomNameMatch == false) {
+              bot.reply(message, {
+                text: "please provide the correct roomName"
+              });
+            }
+          })
+      }
+    })
+  } else {
+    bot.reply(message, {
+      text: "`Oops!!` I Didn't get you. You can always type `Help` if you are lost"
     });
   }
 });
 
-controller.hears('My Events' || 'my events','direct_message',function(bot, message){
+controller.hears('My Events' || 'my events', 'direct_message', function (bot, message) {
   var user;
   bot.api.users.info({
     user: message.user
@@ -173,93 +191,93 @@ controller.hears('My Events' || 'my events','direct_message',function(bot, messa
       bookingService.getMyEvents(user)
         .then((events) => {
           var fields = [];
-          for(var i = 0;i<events.data.length;i++){
+          for (var i = 0; i < events.data.length; i++) {
             fields.push({
-              "title":`${events.data[i].title} AT ${events.data[i].roomName}`,
-              "value":`${events.data[i].startsAt} to ${events.data[i].endsAt}`,
+              "title": `${events.data[i].title} AT ${events.data[i].roomName}`,
+              "value": `${events.data[i].startsAt} to ${events.data[i].endsAt}`,
               "short": true
             })
           }
-          
-          bot.reply(message,{
-            text:"Your Events",
-            attachments:[{
-              "text":"Events",
-              "fields":fields
+
+          bot.reply(message, {
+            text: "Your Events",
+            attachments: [{
+              "text": "Events",
+              "fields": fields
             }]
           })
         })
         .catch(() => {
-          bot.reply(message,{
-            text:"Failed to get my events"
+          bot.reply(message, {
+            text: "Failed to get my events"
           })
         })
     }
   })
 });
 
-controller.hears('get events for'||'Get Events For','direct_message',function(bot,message){
+controller.hears('get events for' || 'Get Events For', 'direct_message', function (bot, message) {
   var inputText = message.text;
   var roomNameElements = inputText.split(/\s+/).slice(3);
-  var roomName = roomNameElements[1]?(roomNameElements[0].concat(" "+roomNameElements[1])):roomNameElements[0];
+  var roomName = roomNameElements[1] ? (roomNameElements[0].concat(" " + roomNameElements[1])) : roomNameElements[0];
   bookingService.getRoomEvents(roomName)
     .then((events) => {
-          var fields = [];
-          for(var i = 0;i<events.data.length;i++){
-            fields.push({
-              "title":`${events.data[i].title}`,
-              "value":`${events.data[i].startsAt} to ${events.data[i].endsAt}`,
-              "short": true
-            })
-          }
-          
-          bot.reply(message,{
-            text:`Events for ${roomName}`,
-            attachments:[{
-              "text":"Events",
-              "fields":fields
-            }]
-          })
+      var fields = [];
+      for (var i = 0; i < events.data.length; i++) {
+        fields.push({
+          "title": `${events.data[i].title}`,
+          "value": `${events.data[i].startsAt} to ${events.data[i].endsAt}`,
+          "short": true
         })
-        .catch(() => {
-          bot.reply(message,{
-            text:"Failed to get room events"
-          })
-        })
+      }
+
+      bot.reply(message, {
+        text: `Events for ${roomName}`,
+        attachments: [{
+          "text": "Events",
+          "fields": fields
+        }]
+      })
+    })
+    .catch(() => {
+      bot.reply(message, {
+        text: "Failed to get room events"
+      })
+    })
 });
 
-controller.hears('delete','direct_message',function(bot,message){
+controller.hears('delete', 'direct_message', function (bot, message) {
   var inputText = message.text;
   var user;
   var startsAt;
   var endsAt;
   var pattern = /(delete)[\s]+(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])(\s)(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)/ig;
-  if(pattern.test(inputText)){
-    
-    var dateTimeUtil = new DateTimeUtil(inputText);
-     startsAt = dateTimeUtil.startsAt;
+  if (pattern.test(inputText)) {
 
-     bot.api.users.info({
-       user:message.user
-     }, function(err, info){
-       if(info){
-         user = info.user.name;
-         bookingService.deleteEvent(user,startsAt)
+    var dateTimeUtil = new DateTimeUtil(inputText);
+    startsAt = dateTimeUtil.startsAt;
+
+    bot.api.users.info({
+      user: message.user
+    }, function (err, info) {
+      if (info) {
+        user = info.user.name;
+        bookingService.deleteEvent(user, startsAt)
           .then((data) => {
             bot.reply(message, {
-            text: "Event Deleted"
-          });
-        })
-        .catch(error => {
-          bot.reply(message,{
-            text:"Unable To Delete event"
-          });
-        })
-       }
-     })
-  }else{
-    bot.reply(message,{
-      text:"`Oops!!` I Didn't get you. You can always type `Help` if you are lost"
+              text: "Event Deleted"
+            });
+          })
+          .catch(error => {
+            bot.reply(message, {
+              text: "Unable To Delete event"
+            });
+          })
+      }
+    })
+  } else {
+    bot.reply(message, {
+      text: "`Oops!!` I Didn't get you. You can always type `Help` if you are lost"
     });
   }
 });
