@@ -59,11 +59,25 @@ function BookingService() {
     });
 
   }
+
+  function deleteEvent(user,startsAt){
+    return new Promise((resolve,reject) =>{
+      axios.delete(`${url}/user/${user}/events/startingTime/${startsAt}`)
+        .then((event) =>{
+          resolve(event);
+        })
+        .catch((error) =>{
+          reject(error);
+        })
+    })
+  }
+  
   return {
     createEvent: createEvent,
     getMyEvents: getMyEvents,
     getRooms: getRooms,
-    getRoomEvents: getRoomEvents
+    getRoomEvents: getRoomEvents,
+    deleteEvent: deleteEvent
   }
 
 }

@@ -21,7 +21,9 @@ function DateTimeUtil(inputText) {
   function extractTime(inputText) {
     var timePattern = /(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)/ig;
     var startTime = timeStandardToMilitary(inputText.match(timePattern)[0]) + ":00Z";
+    if((inputText.match(timePattern).length)>1){
     var endTime = timeStandardToMilitary(inputText.match(timePattern)[1]) + ":00Z";
+    }
     return {
       startTime: startTime,
       endTime: endTime

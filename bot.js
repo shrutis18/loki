@@ -79,6 +79,11 @@ controller.hears('help', 'direct_message', function (bot, message) {
         text: "Type `get events for [RoonName]` to get Room Events",
         color: '#36a64f',
         mrkdwn_in: ['text']
+      },
+      {
+        text: "Type `delete [startsAt] eg: delete 11-6 3:30PM` to delete your Event",
+        color: '#36a64f',
+        mrkdwn_in: ['text']
       }
     ]
   });
@@ -223,3 +228,38 @@ controller.hears('get events for'||'Get Events For','direct_message',function(bo
         })
 });
 
+controller.hears('delete','direct_message',function(bot,message){
+  var inputText = message.text;
+  var user;
+  var startsAt;
+  var endsAt;
+  var pattern = /(delete)[\s]+(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])(\s)(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)/ig;
+  if(pattern.test(inputText)){
+    
+    var dateTimeUtil = new DateTimeUtil(inputText);
+     startsAt = dateTimeUtil.startsAt;
+
+     bot.api.users.info({
+       user:message.user
+     }, function(err, info){
+       if(info){
+         user = info.user.name;
+         bookingService.deleteEvent(user,startsAt)
+          .then((data) => {
+            bot.reply(message, {
+            text: "Event Deleted"
+          });
+        })
+        .catch(error => {
+          bot.reply(message,{
+            text:"Unable To Delete event"
+          });
+        })
+       }
+     })
+  }else{
+    bot.reply(message,{
+      text:"`Oops!!` I Didn't get you. You can always type `Help` if you are lost"
+    });
+  }
+});
