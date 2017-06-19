@@ -190,22 +190,28 @@ controller.hears('My Events' || 'my events', 'direct_message', function (bot, me
       user = info.user.name;
       bookingService.getMyEvents(user)
         .then((events) => {
-          var fields = [];
-          for (var i = 0; i < events.data.length; i++) {
-            fields.push({
-              "title": `${events.data[i].title} AT ${events.data[i].roomName}`,
-              "value": `${events.data[i].startsAt} to ${events.data[i].endsAt}`,
-              "short": true
+          if (typeof (events.data) == "string") {
+            bot.reply(message, {
+              text: events.data
+            });
+          } else {
+            var fields = [];
+            for (var i = 0; i < events.data.length; i++) {
+              fields.push({
+                "title": `${events.data[i].title} AT ${events.data[i].roomName}`,
+                "value": `${events.data[i].startsAt} to ${events.data[i].endsAt}`,
+                "short": true
+              })
+            }
+
+            bot.reply(message, {
+              text: "Your Events",
+              attachments: [{
+                "text": "Events",
+                "fields": fields
+              }]
             })
           }
-
-          bot.reply(message, {
-            text: "Your Events",
-            attachments: [{
-              "text": "Events",
-              "fields": fields
-            }]
-          })
         })
         .catch(() => {
           bot.reply(message, {
@@ -222,22 +228,28 @@ controller.hears('get events for' || 'Get Events For', 'direct_message', functio
   var roomName = roomNameElements[1] ? (roomNameElements[0].concat(" " + roomNameElements[1])) : roomNameElements[0];
   bookingService.getRoomEvents(roomName)
     .then((events) => {
-      var fields = [];
-      for (var i = 0; i < events.data.length; i++) {
-        fields.push({
-          "title": `${events.data[i].title}`,
-          "value": `${events.data[i].startsAt} to ${events.data[i].endsAt}`,
-          "short": true
+      if (typeof (events.data) == "string") {
+        bot.reply(message, {
+          text: events.data
+        });
+      } else {
+        var fields = [];
+        for (var i = 0; i < events.data.length; i++) {
+          fields.push({
+            "title": `${events.data[i].title}`,
+            "value": `${events.data[i].startsAt} to ${events.data[i].endsAt}`,
+            "short": true
+          })
+        }
+
+        bot.reply(message, {
+          text: `Events for ${roomName}`,
+          attachments: [{
+            "text": "Events",
+            "fields": fields
+          }]
         })
       }
-
-      bot.reply(message, {
-        text: `Events for ${roomName}`,
-        attachments: [{
-          "text": "Events",
-          "fields": fields
-        }]
-      })
     })
     .catch(() => {
       bot.reply(message, {
