@@ -67,7 +67,7 @@ controller.hears('help', 'direct_message', function (bot, message) {
         mrkdwn_in: ['text']
       },
       {
-        text: "Type `Book Beach today 3 PM to 4 PM` to book `Beach` for `3 PM to 4 PM`",
+        text: "Type `Book Beach mm-dd hh:mm PM/AM to  mm-dd hh:mm PM/AM` to book `Beach` for `3 PM to 4 PM`",
         color: '#36a64f',
         mrkdwn_in: ['text']
       },
@@ -77,12 +77,12 @@ controller.hears('help', 'direct_message', function (bot, message) {
         mrkdwn_in: ['text']
       },
       {
-        text: "Type `get events for [RoonName]` to get Room Events",
+        text: "Type `get events for [RoomName]` to get Room Events",
         color: '#36a64f',
         mrkdwn_in: ['text']
       },
       {
-        text: "Type `delete [startsAt] eg: delete 11-6 3:30PM` to delete your Event",
+        text: "Type `delete [mm-dd hh:mm PM/AM] eg: delete 11-6 3:30PM` to delete your Event",
         color: '#36a64f',
         mrkdwn_in: ['text']
       }
@@ -141,7 +141,7 @@ controller.hears('Book' || 'book', 'direct_message', function (bot, message) {
     var nameUtil = new NameUtil(inputText);
     startsAt = dateTimeUtil.startsAt;
     endsAt = dateTimeUtil.endsAt;
-    var roomName = nameUtil.roomName[1];
+    var roomName = nameUtil.roomName[1].toLowerCase();
     bot.api.users.info({
       user: message.user
     }, function (err, info) {
