@@ -135,13 +135,13 @@ controller.hears('Book' || 'book', 'direct_message', function (bot, message) {
   var endsAt;
   var roomName;
   var roomNameMatch = false;
-  var pattern = /(book)[\s]+(\w)+\s([a-z]+)?(\s)?(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])(\s)(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)(\s*)(to)(\s*)(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])(\s)(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)/ig;
+  var pattern = /(book)[\s]+(\w)+([\s]room)?[\s]+(for|today|tomorrow|(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01]))[\s]+(at[\s]+(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)(\s*)for[\s]+([1-9][0-9]?(\.[1-9])?[\s]+(hours|hrs|hour|hr|minutes|mins))|([1-9][0-9]?(\.[1-9])?[\s]+(hours|hrs|hour|hr|minutes|mins)))/ig;
   if (pattern.test(inputText)) {
     var dateTimeUtil = new DateTimeUtil(inputText);
     var nameUtil = new NameUtil(inputText);
     startsAt = dateTimeUtil.startsAt;
     endsAt = dateTimeUtil.endsAt;
-    var roomName = nameUtil.roomName[1].toLowerCase();
+    var roomName = nameUtil.roomName.toLowerCase();
     bot.api.users.info({
       user: message.user
     }, function (err, info) {
@@ -152,7 +152,7 @@ controller.hears('Book' || 'book', 'direct_message', function (bot, message) {
             for (var i = 0; i < rooms.data.length; i++) {
               if (rooms.data[i].roomName.match(roomName)) {
                 roomNameMatch = true;
-                bookingService.createEvent(roomName, "", "", new Date(startsAt), new Date(endsAt), user)
+                bookingService.createEvent(roomName, "Standup", "", new Date(startsAt), new Date(endsAt), user)
                   .then((data) => {
                     bot.reply(message, {
                       text: data.data
@@ -275,9 +275,9 @@ controller.hears('delete', 'direct_message', function (bot, message) {
       if (info) {
         user = info.user.name;
         bookingService.deleteEvent(user, startsAt)
-          .then((data) => {
+          .then((event) => {
             bot.reply(message, {
-              text: "Event Deleted"
+              text: event.data
             });
           })
           .catch(error => {
