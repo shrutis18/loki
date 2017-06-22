@@ -11,9 +11,9 @@ function StartTimeStampUtil(inputText) {
   }
 
   function extractStartTime(inputText) {
-    var timePattern = /(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)/ig;
+    var timePattern = /(([0-1]?[0-9]:?([0-5]?[0-9])?:?([0-5]?[0-9])?)(\s*)(a|p)m)/ig;
     var match = inputText.match(timePattern);
-    var startTime = moment(match, ["h:mm A"]).format('HH:mm:ss');
+    var startTime = moment(match, ["h:mm:ss A"]).format('HH:mm:ss');
     return startTime;
   }
   return {

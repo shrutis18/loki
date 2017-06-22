@@ -269,7 +269,7 @@ controller.hears('delete', 'direct_message', function (bot, message) {
   var inputText = message.text;
   var user;
   var startsAt;
-  var pattern = /(delete)[\s]+(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])(\s)(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)/ig;
+  var pattern = /(delete)[\s]+(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])(\s)(([0-1]?[0-9]:?([0-5]?[0-9])?:?([0-5]?[0-9])?)(\s*)(a|p)m)/ig;
   if (pattern.test(inputText)) {
     var startTimeStampUtil = new StartTimeStampUtil(inputText);
     startsAt = startTimeStampUtil.startsAt;
