@@ -55,9 +55,22 @@ function DateTimeUtil(inputText) {
       endTime: endTime.format("HH:mm:ss")
     }
   }
+
+  function isValidDate(){
+    var currentDate = moment();
+    var startsAtMoment = moment(startsAt.slice(0,-1));
+    if(!(startsAtMoment.isAfter(currentDate) || startsAtMoment.isSame(currentDate))){
+      return false
+    }
+    else{
+      return true;
+    }
+    
+  }
   return {
   startsAt: startsAt,
-  endsAt:endsAt
+  endsAt:endsAt,
+  isValidDate:isValidDate
   };
 }
 

@@ -142,38 +142,44 @@ controller.hears('Book' || 'book', 'direct_message', function (bot, message) {
     startsAt = dateTimeUtil.startsAt;
     endsAt = dateTimeUtil.endsAt;
     var roomName = nameUtil.roomName.toLowerCase();
-    bot.api.users.info({
-      user: message.user
-    }, function (err, info) {
-      if (info) {
-        user = info.user.name;
-        bookingService.getRooms()
-          .then((rooms) => {
-            for (var i = 0; i < rooms.data.length; i++) {
-              if (rooms.data[i].roomName.match(roomName)) {
-                roomNameMatch = true;
-                bookingService.createEvent(roomName, "Standup", "", new Date(startsAt), new Date(endsAt), user)
-                  .then((data) => {
-                    bot.reply(message, {
-                      text: data.data
-                    });
-                  })
-                  .catch(error => {
-                    bot.reply(message, {
-                      text: error.data
-                    });
-                  })
-                break;
+    if (dateTimeUtil.isValidDate()) {
+      bot.api.users.info({
+        user: message.user
+      }, function (err, info) {
+        if (info) {
+          user = info.user.name;
+          bookingService.getRooms()
+            .then((rooms) => {
+              for (var i = 0; i < rooms.data.length; i++) {
+                if (rooms.data[i].roomName.match(roomName)) {
+                  roomNameMatch = true;
+                  bookingService.createEvent(roomName, "Standup", "", new Date(startsAt), new Date(endsAt), user)
+                    .then((data) => {
+                      bot.reply(message, {
+                        text: data.data
+                      });
+                    })
+                    .catch(error => {
+                      bot.reply(message, {
+                        text: error.data
+                      });
+                    })
+                  break;
+                }
               }
-            }
-            if (roomNameMatch == false) {
-              bot.reply(message, {
-                text: "please provide the correct roomName"
-              });
-            }
-          })
-      }
-    })
+              if (roomNameMatch == false) {
+                bot.reply(message, {
+                  text: "please provide the correct roomName"
+                });
+              }
+            })
+        }
+      })
+    } else {
+      bot.reply(message, {
+        text: "Invalid Date"
+      })
+    }
   } else {
     bot.reply(message, {
       text: "`Oops!!` I Didn't get you. You can always type `Help` if you are lost"
