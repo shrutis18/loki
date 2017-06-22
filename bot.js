@@ -9,6 +9,7 @@ const greetingMessages = require('./src/help/greeting-messages');
 var BookingService = require('./src/service/booking-service');
 var DateTimeUtil = require('./src/utils/date-time-util');
 var NameUtil = require('./src/utils/name-util');
+var StartTimeStampUtil = require('./src/utils/start-timestamp-util');
 
 var bookingService = new BookingService();
 
@@ -268,13 +269,10 @@ controller.hears('delete', 'direct_message', function (bot, message) {
   var inputText = message.text;
   var user;
   var startsAt;
-  var endsAt;
   var pattern = /(delete)[\s]+(0?[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])(\s)(([0-1]?[0-9]:?([0-5]?[0-9])?)(\s*)(a|p)m)/ig;
   if (pattern.test(inputText)) {
-
-    var dateTimeUtil = new DateTimeUtil(inputText);
-    startsAt = dateTimeUtil.startsAt;
-
+    var startTimeStampUtil = new StartTimeStampUtil(inputText);
+    startsAt = startTimeStampUtil.startsAt;
     bot.api.users.info({
       user: message.user
     }, function (err, info) {
