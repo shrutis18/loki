@@ -68,7 +68,17 @@ controller.hears('help', 'direct_message', function (bot, message) {
         mrkdwn_in: ['text']
       },
       {
-        text: "Type `Book Beach mm-dd hh:mm PM/AM to  mm-dd hh:mm PM/AM` to book `Beach` for `3 PM to 4 PM`",
+        text: "Type `Book Beach for 3 hr|minutes` to book `Beach` immediately",
+        color: '#36a64f',
+        mrkdwn_in: ['text']
+      },
+      {
+        text: "Type `Book Beach today|tomorrow at 3pm for 2 hrs` to book `Beach` for `for a specific time`",
+        color: '#36a64f',
+        mrkdwn_in: ['text']
+      },
+      {
+        text: "Type `Book Beach 06-23 (MM-DD) at 3pm for 2 hrs` to book `Beach` for `for a specific day` eg ",
         color: '#36a64f',
         mrkdwn_in: ['text']
       },
