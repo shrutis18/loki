@@ -152,35 +152,25 @@ controller.hears('Book' || 'book', 'direct_message', function (bot, message) {
     var nameUtil = new NameUtil(inputText);
     startsAt = dateTimeUtil.startsAt;
     endsAt = dateTimeUtil.endsAt;
-    var roomName = nameUtil.roomName.toLowerCase();
+    var roomName = nameUtil.roomName;
     if (dateTimeUtil.isValidDate()) {
       bot.api.users.info({
         user: message.user
       }, function (err, info) {
         if (info) {
           user = info.user.name;
-          bookingService.getRooms()
-            .then((rooms) => {
-              for (var i = 0; i < rooms.data.length; i++) {
-                if (rooms.data[i].roomName.match(roomName)) {
-                  roomNameMatch = true;
-                  bookingService.createEvent(roomName, "Standup", "", new Date(startsAt), new Date(endsAt), user)
-                    .then((data) => {
-                      bot.reply(message, {
-                        text: data.data
-                      });
-                    })
-                    .catch(error => {
-                      bot.reply(message, {
-                        text: error.data
-                      });
-                    })
-                  break;
-                }
-              }
-              if (roomNameMatch == false) {
+          bookingService.getRoom(roomName)
+            .then((room) => {
+              if (room.data.length == 1) {
+                bookingService.createEvent(roomName, "Standup", "", new Date(startsAt), new Date(endsAt), user)
+                  .then((data) => {
+                    bot.reply(message, {
+                      text: data.data
+                    });
+                  })
+              } else {
                 bot.reply(message, {
-                  text: "please provide the correct roomName"
+                  text: "Invalid `Room Name`.Fire `Get Rooms` to get list of `Rooms`"
                 });
               }
             })
@@ -307,4 +297,3 @@ controller.hears('delete', 'direct_message', function (bot, message) {
     });
   }
 });
-

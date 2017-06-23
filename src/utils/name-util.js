@@ -4,7 +4,7 @@ function NameUtil(inputText) {
   function extractName(inputText) {
     var namePattern = /book[\s+](\w+([\s]room)?).*/i;
     var roomname = inputText.match(namePattern);
-    return roomname[1];
+    return roomname[1].toLowerCase();
   }
 
   return {

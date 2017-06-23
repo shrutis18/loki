@@ -35,6 +35,19 @@ function BookingService() {
         })
     });
   }
+
+  function getRoom(roomName){
+    return new Promise((resolve,reject) => {
+      axios.get(`${url}/room/${roomName}`)
+        .then((room) =>{
+          resolve(room);
+        })
+        .catch((error) => {
+          reject(error)
+        })
+    });
+  }
+
   function getMyEvents(user){
       return new Promise((resolve,reject) =>{
           axios.get(`${url}/events/${user}`)
@@ -76,6 +89,7 @@ function BookingService() {
     createEvent: createEvent,
     getMyEvents: getMyEvents,
     getRooms: getRooms,
+    getRoom: getRoom,
     getRoomEvents: getRoomEvents,
     deleteEvent: deleteEvent
   }
