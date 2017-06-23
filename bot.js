@@ -216,7 +216,7 @@ controller.hears('My Events' || 'my events', 'direct_message', function (bot, me
             for (var i = 0; i < events.data.length; i++) {
               fields.push({
                 "title": `${events.data[i].title} AT ${events.data[i].roomName}`,
-                "value": `${events.data[i].startsAt} to ${events.data[i].endsAt}`,
+                "value": `${moment.utc(events.data[i].startsAt).format('dddd MMMM-DD HH:mm')} TO ${moment.utc(events.data[i].endsAt).format('dddd MMMM-DD HH:mm')}`,
                 "short": true
               })
             }
@@ -254,7 +254,7 @@ controller.hears('get events for' || 'Get Events For', 'direct_message', functio
         for (var i = 0; i < events.data.length; i++) {
           fields.push({
             "title": `${events.data[i].title}`,
-            "value": `${events.data[i].startsAt} to ${events.data[i].endsAt}`,
+            "value": `${moment.utc(events.data[i].startsAt).format('dddd MMMM-DD HH:mm')} TO ${moment.utc(events.data[i].endsAt).format('dddd MMMM-DD HH:mm')}`,
             "short": true
           })
         }
@@ -307,3 +307,4 @@ controller.hears('delete', 'direct_message', function (bot, message) {
     });
   }
 });
+
