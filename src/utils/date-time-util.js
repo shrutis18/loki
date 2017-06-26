@@ -57,6 +57,7 @@ function DateTimeUtil(inputText) {
   function isValidDate() {
     var currentDate = new Date(moment().format('YYYY-MM-DDThh:mm:ss'));
     var startsAtDate = new Date(moment(startsAt.slice(0, -1)).format('YYYY-MM-DDThh:mm:ss'));
+    
     if (currentDate.getTime() <= startsAtDate.getTime()) {
       return true;
     } else {

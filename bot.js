@@ -162,12 +162,18 @@ controller.hears('Book' || 'book', 'direct_message', function (bot, message) {
           bookingService.getRoom(roomName)
             .then((room) => {
               if (room.data.length == 1) {
-                bookingService.createEvent(roomName, "Standup", "", new Date(startsAt), new Date(endsAt), user)
-                  .then((data) => {
-                    bot.reply(message, {
-                      text: data.data
-                    });
-                  })
+                bot.startConversation(message, function (err, convo) {
+                  convo.addQuestion('Please provide a title for your Event!!', function (response, convo) {
+
+                    bookingService.createEvent(roomName, response.text, "", new Date(startsAt), new Date(endsAt), user)
+                      .then((data) => {
+                        bot.reply(message, {
+                          text: data.data
+                        });
+                      })
+                    convo.next();
+                  }, {}, 'default');
+                })
               } else {
                 bot.reply(message, {
                   text: "Invalid `Room Name`.Fire `Get Rooms` to get list of `Rooms`"
