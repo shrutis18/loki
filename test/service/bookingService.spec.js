@@ -24,7 +24,8 @@ describe('BookingService', () => {
     "startsAt": startsAt,
     "endsAt": endsAt,
     "createdBy": createdBy
-  }
+  };
+  var roomName ="beach";
   var bookingService;
 
   before(() => {
@@ -35,12 +36,42 @@ describe('BookingService', () => {
       event
     });
 
+    mock.onGet('http://localhost:3000/rooms').reply(200);
+
+    mock.onGet(`http://localhost:3000/room/${roomName}`).reply(200);
+
   })
 
 
   it('should be able to create an event', function (done) {
 
     bookingService.createEvent(roomName, title, description, startsAt, endsAt, createdBy)
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        //TODO more asserts
+      })
+      .catch((error) => {
+        assert.fail(error)
+      })
+      .finally(() => done())
+  });
+
+  it('should be able to get rooms', function (done) {
+
+    bookingService.getRooms()
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        //TODO more asserts
+      })
+      .catch((error) => {
+        assert.fail(error)
+      })
+      .finally(() => done())
+  });
+
+   it('should be able to get valid room', function (done) {
+
+    bookingService.getRoom(roomName)
       .then((response) => {
         expect(response.status).to.equal(200);
         //TODO more asserts
