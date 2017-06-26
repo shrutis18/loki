@@ -26,6 +26,8 @@ describe('BookingService', () => {
     "createdBy": createdBy
   };
   var roomName ="beach";
+  var user = "shruti";
+  var startsAt = "2017-07-10T08:30:00Z";
   var bookingService;
 
   before(() => {
@@ -39,6 +41,12 @@ describe('BookingService', () => {
     mock.onGet('http://localhost:3000/rooms').reply(200);
 
     mock.onGet(`http://localhost:3000/room/${roomName}`).reply(200);
+
+    mock.onGet(`http://localhost:3000/room/${roomName}/events`).reply(200);
+
+    mock.onGet(`http://localhost:3000/events/${user}`).reply(200);
+
+    mock.onDelete(`http://localhost:3000/user/${user}/events/startingTime/${startsAt}`).reply(200);
 
   })
 
@@ -72,6 +80,45 @@ describe('BookingService', () => {
    it('should be able to get valid room', function (done) {
 
     bookingService.getRoom(roomName)
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        //TODO more asserts
+      })
+      .catch((error) => {
+        assert.fail(error)
+      })
+      .finally(() => done())
+  });
+
+  it('should be able to get events for a room', function (done) {
+
+    bookingService.getRoomEvents(roomName)
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        //TODO more asserts
+      })
+      .catch((error) => {
+        assert.fail(error)
+      })
+      .finally(() => done())
+  });
+
+  it('should be able to get events for a particular user', function (done) {
+
+    bookingService.getMyEvents(user)
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        //TODO more asserts
+      })
+      .catch((error) => {
+        assert.fail(error)
+      })
+      .finally(() => done())
+  });
+
+  it('should be able to delete events for a particular user w.r.t starting time', function (done) {
+
+    bookingService.deleteEvent(user,startsAt)
       .then((response) => {
         expect(response.status).to.equal(200);
         //TODO more asserts
